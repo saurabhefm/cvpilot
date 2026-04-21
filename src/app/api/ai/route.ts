@@ -45,6 +45,41 @@ Data to condense:
 ${content}
 `;
 
+const PROMPT_TIPS = (content: string) => `
+You are a career strategist. 
+TASK: Analyze this resume and provide 3-4 ultra-concise, high-impact tips for improvement.
+Focus on: quantifying results, skill gaps, or formatting impact.
+RULES:
+1. Return ONLY a JSON array of strings: ["Tip 1", "Tip 2", ...]
+2. Keep tips under 15 words each.
+
+Resume Data:
+${content}
+`;
+
+const PROMPT_ATS = (content: string) => `
+You are an expert Applicant Tracking System (ATS) auditor. 
+TASK: Analyze the resume for ATS compatibility and recruiter impact.
+DATA: ${content}
+
+RULES:
+1. Return ONLY a valid JSON object.
+2. Provide a score (0-100) for overall impact.
+3. Provide breakdown for Keywords, Impact, and Formatting.
+4. Provide a list of strictly actionable improvements.
+
+Output Structure:
+{
+  "score": 85,
+  "categories": [
+    { "name": "Keywords", "score": 90 },
+    { "name": "Impact", "score": 75 },
+    { "name": "Formatting", "score": 95 }
+  ],
+  "improvements": ["Add more quantified achievements", "Ensure contact info is at the top", "Use standard section headers"]
+}
+`;
+
 function cleanData(data: any): any {
   if (typeof data === "string") {
     return data.replace(/@/g, "").trim();
@@ -81,6 +116,8 @@ export async function POST(req: Request) {
       let prompt = "";
       if (task === "EXTRACT") prompt = PROMPT_EXTRACT(content);
       else if (task === "COMPACT") prompt = PROMPT_COMPACT(content);
+      else if (task === "TIPS") prompt = PROMPT_TIPS(content);
+      else if (task === "ATS_SCAN") prompt = PROMPT_ATS(content);
       else prompt = PROMPT_POLISH(content);
       
       try {
@@ -103,6 +140,7 @@ export async function POST(req: Request) {
       let prompt = "";
       if (task === "EXTRACT") prompt = PROMPT_EXTRACT(content);
       else if (task === "COMPACT") prompt = PROMPT_COMPACT(content);
+      else if (task === "ATS_SCAN") prompt = PROMPT_ATS(content);
       else prompt = PROMPT_POLISH(content);
 
       const response = await fetch(`${process.env.OLLAMA_BASE_URL}/api/generate`, {
@@ -118,7 +156,7 @@ export async function POST(req: Request) {
       console.log(`[AI API] Raw Response Length: ${resultText.length}`);
     }
 
-    if (task === "EXTRACT" || task === "COMPACT") {
+    if (task === "EXTRACT" || task === "COMPACT" || task === "TIPS" || task === "ATS_SCAN") {
       console.log(`[AI API] Attempting to parse JSON from response...`);
       // Extract JSON block from markdown response if LLM returns it wrapped in ```json
       const jsonMatch = resultText.match(/\{[\s\S]*\}|\[[\s\S]*\]/);

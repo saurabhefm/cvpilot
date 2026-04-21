@@ -9,7 +9,7 @@ interface UploadZoneProps {
   onTextSubmit: (text: string) => void;
 }
 
-const UploadZone = ({ onFileUpload }: UploadZoneProps) => {
+const UploadZone = ({ onFileUpload, onTextSubmit }: UploadZoneProps) => {
   const [isDragActive, setIsDragActive] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedName, setUploadedName] = useState<string | null>(null);

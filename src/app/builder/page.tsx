@@ -60,6 +60,9 @@ const BuilderPage = () => {
     matchScore: "92"
   });
   const [selectedTemplate, setSelectedTemplate] = useState("modern");
+  const [isCompacting, setIsCompacting] = useState(false);
+  const [aiTips, setAiTips] = useState<string[]>([]);
+  const [isLoadingTips, setIsLoadingTips] = useState(false);
 
   React.useEffect(() => {
     if (typeof window !== "undefined") {
@@ -113,6 +116,45 @@ const BuilderPage = () => {
     }
   }, []);
 
+  // Handle incoming resume from ATS Checker
+  React.useEffect(() => {
+    if (typeof window !== "undefined") {
+      const pendingText = sessionStorage.getItem("pending_resume");
+      const pendingName = sessionStorage.getItem("pending_filename");
+      
+      if (pendingText) {
+        const triggerExtraction = async () => {
+          setIsLoadingTips(true);
+          try {
+            const response = await fetch("/api/ai", {
+              method: "POST",
+              body: JSON.stringify({ task: "EXTRACT", content: pendingText })
+            });
+            const data = await response.json();
+            
+            if (data.experience) {
+              setResumeData(prev => ({
+                ...prev,
+                ...data,
+                name: pendingName && pendingName !== "Pasted Content" 
+                  ? pendingName.split(".")[0].replace(/[_-]/g, " ") 
+                  : prev.name
+              }));
+              // Success - clear the pending content
+              sessionStorage.removeItem("pending_resume");
+              sessionStorage.removeItem("pending_filename");
+            }
+          } catch (e) {
+            console.error("Auto-extraction from Checker failed:", e);
+          } finally {
+            setIsLoadingTips(false);
+          }
+        };
+        triggerExtraction();
+      }
+    }
+  }, []);
+
   const handleDownloadPDF = async () => {
     if (!resumeRef.current) return;
     
@@ -139,10 +181,6 @@ const BuilderPage = () => {
         format: [elementWidth, a4Height] // Standard A4-ish page
       });
 
-      let heightLeft = elementHeight;
-      let position = 0;
-      let pageNumber = 1;
-
       // Add the first page
       pdf.addImage(dataUrl, "PNG", 0, 0, elementWidth, elementHeight);
       
@@ -151,7 +189,7 @@ const BuilderPage = () => {
 
       // If content is longer than one page, add more pages
       while (heightLeft > 0) {
-        const position = -(a4Height * pageNumber);
+        let position = -(a4Height * pageNumber);
         pdf.addPage([elementWidth, a4Height], "portrait");
         pdf.addImage(dataUrl, "PNG", 0, position, elementWidth, elementHeight);
         heightLeft -= a4Height;
@@ -165,6 +203,56 @@ const BuilderPage = () => {
       setIsDownloading(false);
     }
   };
+
+  const handleSmartCompact = async () => {
+    setIsCompacting(true);
+    try {
+      const response = await fetch("/api/ai", {
+        method: "POST",
+        body: JSON.stringify({ 
+          task: "COMPACT", 
+          content: JSON.stringify(resumeData.experience) 
+        })
+      });
+      if (!response.ok) throw new Error("Compacting failed");
+      const result = await response.json();
+      if (Array.isArray(result)) {
+        setResumeData(prev => ({ ...prev, experience: result }));
+      }
+    } catch (e) {
+      console.error("Compact error:", e);
+    } finally {
+      setIsCompacting(false);
+    }
+  };
+
+  const fetchAITips = async () => {
+    setIsLoadingTips(true);
+    try {
+      const response = await fetch("/api/ai", {
+        method: "POST",
+        body: JSON.stringify({ 
+          task: "TIPS", 
+          content: JSON.stringify(resumeData) 
+        })
+      });
+      const data = await response.json();
+      if (Array.isArray(data)) {
+        setAiTips(data);
+      }
+    } catch (e) {
+      console.error("Failed to fetch tips", e);
+    } finally {
+      setIsLoadingTips(false);
+    }
+  };
+
+  // Fetch tips on first load of AI tab
+  React.useEffect(() => {
+    if (activeTab === "ai" && aiTips.length === 0) {
+      fetchAITips();
+    }
+  }, [activeTab]);
 
   const [polishingIndex, setPolishingIndex] = useState<{exp: number, bullet: number} | null>(null);
 
@@ -549,21 +637,44 @@ const BuilderPage = () => {
            )}
 
            {activeTab === "design" && (
-              <div className="space-y-6">
-                 <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
-                    <p className="text-[10px] font-bold text-slate-500 uppercase mb-4">Active Template</p>
-                    <div className="flex items-center gap-3">
-                       <div className="w-12 h-12 bg-brand-mint/20 rounded-lg flex items-center justify-center text-brand-mint">
-                          <Layout className="w-6 h-6" />
-                       </div>
-                       <div>
-                          <p className="text-sm font-bold text-white uppercase">{selectedTemplate}</p>
-                          <p className="text-[10px] text-slate-500 uppercase tracking-widest">Recruiter Verified</p>
-                       </div>
-                    </div>
-                 </div>
-              </div>
-           )}
+               <div className="space-y-6">
+                  <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
+                     <p className="text-[10px] font-bold text-slate-500 uppercase mb-4">Active Template</p>
+                     <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 bg-brand-mint/20 rounded-lg flex items-center justify-center text-brand-mint uppercase font-black text-xs">
+                           {selectedTemplate[0]}
+                        </div>
+                        <div>
+                           <p className="text-sm font-bold text-white uppercase">{selectedTemplate}</p>
+                           <p className="text-[10px] text-slate-500 uppercase tracking-widest">Recruiter Verified</p>
+                        </div>
+                     </div>
+                  </div>
+
+                  <div className="space-y-4">
+                     <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-500">Pick A Style</h3>
+                     <div className="grid grid-cols-1 gap-3">
+                        {[
+                           { id: "modern", name: "Modern Sidebar", desc: "High-impact for Tech/Design" },
+                           { id: "professional", name: "Classic Corporate", desc: "Trusted for Finance/Legal" },
+                           { id: "minimal", name: "Minimalist", desc: "Clean & Focused" }
+                        ].map((t) => (
+                           <button 
+                              key={t.id}
+                              onClick={() => setSelectedTemplate(t.id)}
+                              className={`w-full p-4 rounded-xl text-left border-2 transition-all group ${selectedTemplate === t.id ? "border-brand-mint bg-brand-mint/5" : "border-white/5 bg-white/5 hover:border-white/20"}`}
+                           >
+                              <div className="flex items-center justify-between mb-1">
+                                 <span className={`text-xs font-bold uppercase tracking-widest ${selectedTemplate === t.id ? "text-brand-mint" : "text-white group-hover:text-brand-mint"}`}>{t.name}</span>
+                                 {selectedTemplate === t.id && <CheckCircle2 className="w-4 h-4 text-brand-mint" />}
+                              </div>
+                              <p className="text-[10px] text-slate-500">{t.desc}</p>
+                           </button>
+                        ))}
+                     </div>
+                  </div>
+               </div>
+            )}
 
            {activeTab === "ai" && (
               <div className="space-y-6">
@@ -572,22 +683,49 @@ const BuilderPage = () => {
                        <Zap className="w-3 h-3" />
                        <span className="text-[10px] font-bold uppercase tracking-widest">Live Score: {resumeData.matchScore}%</span>
                     </div>
-                    <p className="text-xs text-slate-300 leading-relaxed italic">"Your summary is highly optimized for DevOps roles. Add 2 more technical certifications to hit 98%."</p>
-                 </div>
+                  </div>
+                  <div className="space-y-4">
+                     <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-500">AI Improvements</h3>
+                     <div className="space-y-3">
+                        {isLoadingTips ? (
+                           [1,2,3].map(i => (
+                              <div key={i} className="h-12 bg-white/5 animate-pulse rounded-xl" />
+                           ))
+                        ) : aiTips.length > 0 ? (
+                           aiTips.map((tip, i) => (
+                              <div key={i} className="p-3 bg-brand-mint/5 border border-brand-mint/20 rounded-xl flex gap-3">
+                                 <div className="w-5 h-5 bg-brand-mint/20 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                                    <Zap className="w-3 h-3 text-brand-mint" />
+                                 </div>
+                                 <p className="text-[11px] text-slate-300 leading-relaxed font-medium">{tip}</p>
+                              </div>
+                           ))
+                        ) : (
+                           <div className="p-4 text-center border border-dashed border-white/10 rounded-xl">
+                              <p className="text-[10px] text-slate-500">No active tips. Add more experience for deeper insights.</p>
+                           </div>
+                        )}
+                        <button 
+                           onClick={fetchAITips}
+                           disabled={isLoadingTips}
+                           className="w-full py-2 text-[10px] font-bold uppercase tracking-widest text-slate-500 hover:text-brand-mint transition-colors"
+                        >
+                           {isLoadingTips ? "Analyzing..." : "Refresh Suggestions"}
+                        </button>
+                     </div>
 
-                 <div className="space-y-4">
-                    <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-500">Resume Strategy</h3>
-                    <button 
-                     onClick={handleSmartCompact}
-                     disabled={isCompacting}
-                     className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-left hover:border-brand-mint/50 transition-all group"
-                    >
-                       <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs font-bold text-white group-hover:text-brand-mint transition-colors">Smart Compact</span>
-                          {isCompacting ? <Loader2 className="w-4 h-4 animate-spin text-brand-mint" /> : <ChevronLeft className="w-4 h-4 text-slate-600 group-hover:translate-x-[-2px] transition-transform" />}
-                       </div>
-                       <p className="text-[10px] text-slate-500 leading-relaxed">Condense all roles to fit on a single page while keeping all names and dates mandatory.</p>
-                    </button>
+                     <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-500 mt-6">Resume Strategy</h3>
+                     <button 
+                      onClick={handleSmartCompact}
+                      disabled={isCompacting}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-left hover:border-brand-mint/50 transition-all group"
+                     >
+                        <div className="flex items-center justify-between mb-1">
+                           <span className="text-xs font-bold text-white group-hover:text-brand-mint transition-colors">Smart Compact</span>
+                           {isCompacting ? <Loader2 className="w-4 h-4 animate-spin text-brand-mint" /> : <ChevronLeft className="w-4 h-4 text-slate-600 group-hover:translate-x-[-2px] transition-transform" />}
+                        </div>
+                        <p className="text-[10px] text-slate-500 leading-relaxed">Condense all roles to fit on a single page while keeping all names and dates mandatory.</p>
+                     </button>
 
                     <div className="p-4 bg-white/5 border border-dashed border-white/10 rounded-xl">
                        <div className="flex items-center gap-2 text-slate-400 mb-2">

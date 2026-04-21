@@ -22,6 +22,12 @@ const Navbar = () => {
   };
 
   const scrollToSection = (id: string) => {
+    // If not on home page, navigate to home page with hash
+    if (window.location.pathname !== "/") {
+      window.location.href = `/#${id}`;
+      return;
+    }
+
     const element = document.getElementById(id);
     if (element) {
       const offset = 80; // Navbar height
@@ -97,7 +103,12 @@ const Navbar = () => {
                           <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-6">Tools</h3>
                           <div className="space-y-6">
                             {megaMenus.resume.left.map((item) => (
-                              <Link key={item.title} href={item.href} className="flex items-center gap-4 group/item">
+                              <Link 
+                                key={item.title} 
+                                href={item.href} 
+                                onClick={() => setActiveMenu(null)}
+                                className="flex items-center gap-4 group/item"
+                              >
                                 <div className="p-2 bg-white rounded-lg border border-slate-200 text-slate-600 group-hover/item:text-brand-mint group-hover/item:border-brand-mint transition-colors">
                                   {item.icon}
                                 </div>
@@ -112,7 +123,12 @@ const Navbar = () => {
                           <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-6">Resources</h3>
                           <div className="space-y-4">
                             {megaMenus.resume.middle.map((item) => (
-                              <Link key={item.title} href={item.href} className="block text-sm font-medium text-slate-600 hover:text-brand-mint transition-colors">
+                              <Link 
+                                key={item.title} 
+                                href={item.href} 
+                                onClick={() => setActiveMenu(null)}
+                                className="block text-sm font-medium text-slate-600 hover:text-brand-mint transition-colors"
+                              >
                                 {item.title}
                               </Link>
                             ))}
@@ -133,7 +149,10 @@ const Navbar = () => {
                             </div>
                           </div>
                           <button 
-                            onClick={() => scrollToSection("tailor")}
+                            onClick={() => {
+                              scrollToSection("templates");
+                              setActiveMenu(null);
+                            }}
                             className="mt-6 flex items-center justify-between text-sm font-bold text-brand-mint group/link w-full text-left"
                           >
                             Explore Templates <ArrowRight className="w-4 h-4 group-hover/link:translate-x-1 transition-transform" />
