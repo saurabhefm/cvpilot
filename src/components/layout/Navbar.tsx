@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { 
@@ -13,6 +13,7 @@ import {
   ArrowRight
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { ThemeToggle } from "./ThemeToggle";
 
 const Navbar = () => {
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
@@ -63,7 +64,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="fixed top-0 w-full z-50 bg-brand-charcoal border-b border-white/10 backdrop-blur-md">
+    <nav className="fixed top-0 w-full z-50 bg-background/80 border-b border-border backdrop-blur-md transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           {/* Logo */}
@@ -72,7 +73,7 @@ const Navbar = () => {
               <div className="w-10 h-10 bg-brand-mint rounded-lg flex items-center justify-center">
                 <FileText className="text-white w-6 h-6" />
               </div>
-              <span className="text-2xl font-bold tracking-tight text-white">
+              <span className="text-2xl font-bold tracking-tight text-foreground">
                 CVPilot<span className="text-brand-mint">.</span>
               </span>
             </Link>
@@ -83,7 +84,7 @@ const Navbar = () => {
               >
                 <button 
                   onClick={() => toggleMenu("resume")}
-                  className="flex items-center gap-1 text-sm font-medium text-white/80 hover:text-brand-mint transition-colors"
+                  className="flex items-center gap-1 text-sm font-medium text-foreground/80 hover:text-brand-mint transition-colors"
                 >
                   Resume <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${activeMenu === "resume" ? "rotate-180" : ""}`} />
                 </button>
@@ -166,13 +167,13 @@ const Navbar = () => {
 
               <button 
                 onClick={() => scrollToSection("summary")}
-                className="text-sm font-medium text-white/80 hover:text-brand-mint transition-colors underline-offset-4 hover:underline"
+                className="text-sm font-medium text-foreground/80 hover:text-brand-mint transition-colors underline-offset-4 hover:underline"
               >
                 Cover Letter
               </button>
               <button 
                 onClick={() => scrollToSection("pricing")}
-                className="text-sm font-medium text-white/80 hover:text-brand-mint transition-colors underline-offset-4 hover:underline"
+                className="text-sm font-medium text-foreground/80 hover:text-brand-mint transition-colors underline-offset-4 hover:underline"
               >
                 Pricing
               </button>
@@ -180,8 +181,11 @@ const Navbar = () => {
           </div>
 
           {/* Right Section */}
-          <div className="flex items-center gap-6">
-            <Link href="/login" className="text-sm font-semibold text-white/80 hover:text-white transition-colors">
+          <div className="flex items-center gap-4 lg:gap-6">
+            <ThemeToggle />
+            <div className="h-6 w-px bg-border hidden sm:block" />
+            <ATSBadge />
+            <Link href="/login" className="text-sm font-semibold text-foreground/80 hover:text-foreground transition-colors hidden sm:block">
               Log in
             </Link>
             <Button 
@@ -194,6 +198,52 @@ const Navbar = () => {
         </div>
       </div>
     </nav>
+  );
+};
+
+const ATSBadge = () => {
+  const [score, setScore] = useState<number | null>(null);
+
+  useEffect(() => {
+    const checkScore = () => {
+      const stored = localStorage.getItem("ats_score");
+      if (stored) setScore(parseInt(stored));
+    };
+
+    checkScore();
+    window.addEventListener("storage", checkScore);
+    window.addEventListener("storage_update", checkScore);
+    return () => {
+      window.removeEventListener("storage", checkScore);
+      window.removeEventListener("storage_update", checkScore);
+    };
+  }, []);
+
+  if (score === null) return null;
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0, scale: 0.8 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="hidden lg:flex items-center gap-3 px-4 py-1.5 bg-white/5 border border-white/10 rounded-full group cursor-default hover:bg-brand-mint/5 hover:border-brand-mint/20 transition-all"
+    >
+      <div className="relative w-6 h-6">
+        <svg className="w-full h-full transform -rotate-90">
+          <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2.5" fill="transparent" className="text-white/5" />
+          <motion.circle 
+            cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2.5" fill="transparent" strokeDasharray={62.83} 
+            initial={{ strokeDashoffset: 62.83 }}
+            animate={{ strokeDashoffset: 62.83 - (62.83 * score / 100) }}
+            transition={{ duration: 1.5, ease: "easeOut" }}
+            className="text-brand-mint" 
+          />
+        </svg>
+      </div>
+      <div className="flex flex-col leading-none">
+        <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 group-hover:text-brand-mint/60 transition-colors">ATS Match</span>
+        <span className="text-sm font-black text-foreground">{score}%</span>
+      </div>
+    </motion.div>
   );
 };
 

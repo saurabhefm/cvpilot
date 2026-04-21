@@ -29,7 +29,7 @@ const features = [
 
 const FeatureGrid = () => {
   return (
-    <section className="py-24 bg-slate-50">
+    <section className="py-24 bg-slate-50 dark:bg-[#020617]/50 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12">
           {features.map((feature, idx) => (
@@ -39,13 +39,13 @@ const FeatureGrid = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: idx * 0.1 }}
-              className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl transition-all group"
+              className="bg-white dark:bg-slate-900/40 p-8 rounded-3xl border border-slate-100 dark:border-white/5 shadow-sm hover:shadow-xl transition-all group"
             >
-              <div className="mb-6 p-4 bg-slate-50 w-fit rounded-2xl group-hover:bg-brand-mint/10 transition-colors">
+              <div className="mb-6 p-4 bg-slate-50 dark:bg-white/5 w-fit rounded-2xl group-hover:bg-brand-mint/10 transition-colors">
                 {feature.icon}
               </div>
-              <h3 className="text-xl font-bold text-[#0F172A] mb-4">{feature.title}</h3>
-              <p className="text-slate-500 leading-relaxed italic">
+              <h3 className="text-xl font-bold text-foreground mb-4">{feature.title}</h3>
+              <p className="text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
                 {feature.description}
               </p>
             </motion.div>

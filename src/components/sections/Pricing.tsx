@@ -47,11 +47,11 @@ const Pricing = () => {
   };
 
   return (
-    <section className="py-24 bg-white relative">
+    <section className="py-24 bg-background relative transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-extrabold text-[#0F172A] mb-4">Invest in Your Career</h2>
-          <p className="text-slate-500 text-lg">Choose the plan that fits your professional needs.</p>
+          <h2 className="text-4xl font-extrabold text-foreground mb-4">Invest in Your Career</h2>
+          <p className="text-slate-500 dark:text-slate-400 text-lg">Choose the plan that fits your professional needs.</p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
@@ -63,7 +63,7 @@ const Pricing = () => {
               viewport={{ once: true }}
               className={`
                 relative p-10 rounded-[32px] border-2 transition-all duration-300
-                ${plan.recommended ? "border-brand-mint bg-slate-50 shadow-xl" : "border-slate-100 bg-white"}
+                ${plan.recommended ? "border-brand-mint bg-slate-50 dark:bg-white/5 shadow-xl" : "border-border bg-white dark:bg-slate-900/40"}
               `}
             >
               {plan.recommended && (
@@ -73,12 +73,12 @@ const Pricing = () => {
               )}
               
               <div className="mb-8">
-                <h3 className="text-2xl font-bold text-[#0F172A] mb-2">{plan.name}</h3>
+                <h3 className="text-2xl font-bold text-foreground mb-2">{plan.name}</h3>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-5xl font-black text-[#0F172A]">₹{plan.price}</span>
-                  <span className="text-slate-400 font-medium">{plan.period}</span>
+                  <span className="text-5xl font-black text-foreground">₹{plan.price}</span>
+                  <span className="text-slate-500 dark:text-slate-400 font-medium">{plan.period}</span>
                 </div>
-                <p className="mt-4 text-slate-500 text-sm leading-relaxed">{plan.description}</p>
+                <p className="mt-4 text-slate-500 dark:text-slate-400 text-sm leading-relaxed">{plan.description}</p>
               </div>
 
               <div className="space-y-4 mb-10">
@@ -87,7 +87,7 @@ const Pricing = () => {
                     <div className="flex-shrink-0 w-5 h-5 bg-brand-mint/10 rounded-full flex items-center justify-center text-brand-mint">
                       <Check className="w-3 h-3" />
                     </div>
-                    <span className="text-slate-700 font-medium text-sm">{feature}</span>
+                    <span className="text-slate-600 dark:text-slate-300 font-medium text-sm">{feature}</span>
                   </div>
                 ))}
               </div>
@@ -106,8 +106,8 @@ const Pricing = () => {
 
         {/* Payment Icons */}
         <div className="mt-20 flex flex-col items-center">
-          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6">Secure Payments via</p>
-          <div className="flex gap-8 opacity-20 hover:opacity-100 transition-opacity duration-500 grayscale hover:grayscale-0">
+          <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-6">Secure Payments via</p>
+          <div className="flex gap-8 opacity-40 hover:opacity-100 transition-opacity duration-500 grayscale hover:grayscale-0">
              {/* Simple SVG Placeholders for major providers */}
              <PaymentIcon name="Visa" />
              <PaymentIcon name="Mastercard" />

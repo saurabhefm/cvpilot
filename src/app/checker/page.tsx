@@ -22,6 +22,24 @@ const CheckerPage = () => {
   const [activeMode, setActiveMode] = useState<"file" | "text">("file");
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
+  useEffect(() => {
+    // Check if we have a pre-existing result from the Home Page Hero
+    const storedResult = localStorage.getItem("ats_full_result");
+    const storedFileName = sessionStorage.getItem("pending_filename");
+    
+    if (storedResult) {
+      try {
+        const parsed = JSON.parse(storedResult);
+        setResult(parsed);
+        setFileName(storedFileName || "resume.pdf");
+        setStatus("result");
+        setProgress(100);
+      } catch (e) {
+        console.error("Failed to parse stored result", e);
+      }
+    }
+  }, []);
+
   const startScan = async (text: string, name: string) => {
     setStatus("scanning");
     setProgress(20);
@@ -42,6 +60,13 @@ const CheckerPage = () => {
       
       if (data.score !== undefined) {
         setResult(data);
+        // Persist for the Global UI
+        if (typeof window !== "undefined") {
+          localStorage.setItem("ats_score", data.score.toString());
+          localStorage.setItem("ats_full_result", JSON.stringify(data));
+          // Dispatch event to notify Navbar
+          window.dispatchEvent(new Event("storage_update"));
+        }
         setProgress(100);
         setTimeout(() => setStatus("result"), 500);
       } else {

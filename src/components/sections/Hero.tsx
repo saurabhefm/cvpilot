@@ -2,18 +2,32 @@
 
 import React from "react";
 import { Button } from "@/components/ui/Button";
-import { Check, Sparkles, Wand2, FileSearch, RefreshCcw, Star, Zap } from "lucide-react";
-import { motion } from "framer-motion";
+import { Check, Sparkles, Wand2, FileSearch, RefreshCcw, Star, Zap, Upload, Loader2, ShieldCheck, FileUp, ArrowRight } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 interface HeroProps {
   matchScore: number;
   openModal: (title: string, placeholder: string, action: string) => void;
 }
 
-const Hero = ({ matchScore, openModal }: HeroProps) => {
+const Hero = ({ matchScore: propScore, openModal }: HeroProps) => {
+  const [matchScore, setMatchScore] = React.useState(propScore);
+
+  React.useEffect(() => {
+    if (propScore > 0) {
+      setMatchScore(propScore);
+    } else {
+      const stored = localStorage.getItem("ats_score");
+      if (stored) setMatchScore(parseInt(stored));
+    }
+  }, [propScore]);
+
   const scrollToUpload = () => {
     document.getElementById("upload")?.scrollIntoView({ behavior: "smooth" });
   };
+
   return (
     <section className="relative pt-32 pb-20 overflow-hidden dark-hero">
       {/* Background Decorative Elements */}
@@ -34,7 +48,7 @@ const Hero = ({ matchScore, openModal }: HeroProps) => {
                 Build a Resume that <br />
                 <span className="gradient-text tracking-tight">Gets You Hired.</span>
               </h1>
-              <p className="mt-6 text-xl text-slate-400 max-w-xl">
+              <p className="mt-6 text-xl text-slate-500 dark:text-slate-400 max-w-xl">
                 CVPilot uses advanced AI to tailor your resume to specific job descriptions in seconds. Beat the ATS and land more interviews.
               </p>
             </motion.div>
@@ -49,13 +63,13 @@ const Hero = ({ matchScore, openModal }: HeroProps) => {
                 <div className="flex-shrink-0 w-6 h-6 bg-brand-mint/20 rounded-full flex items-center justify-center text-brand-mint">
                   <Check className="w-4 h-4" />
                 </div>
-                <span className="text-lg text-slate-300 font-medium">95% Higher Interview Rate with AI Tailoring</span>
+                <span className="text-lg text-slate-600 dark:text-slate-300 font-medium">95% Higher Interview Rate with AI Tailoring</span>
               </div>
               <div className="flex items-center gap-3">
                 <div className="flex-shrink-0 w-6 h-6 bg-brand-mint/20 rounded-full flex items-center justify-center text-brand-mint">
                   <Check className="w-4 h-4" />
                 </div>
-                <span className="text-lg text-slate-300 font-medium">ATS-Optimized Templates & Keywords</span>
+                <span className="text-lg text-slate-600 dark:text-slate-300 font-medium">ATS-Optimized Templates & Keywords</span>
               </div>
             </motion.div>
 
@@ -72,8 +86,8 @@ const Hero = ({ matchScore, openModal }: HeroProps) => {
               >
                 Build Your Resume With AI
               </Button>
-              <button className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors px-6 h-16 font-semibold">
-                <div className="w-10 h-10 border border-slate-700 rounded-full flex items-center justify-center">
+              <button className="flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-foreground transition-colors px-6 h-16 font-semibold">
+                <div className="w-10 h-10 border border-border dark:border-slate-700 rounded-full flex items-center justify-center">
                   <Sparkles className="w-5 h-5" />
                 </div>
                 See How It Works
@@ -81,92 +95,18 @@ const Hero = ({ matchScore, openModal }: HeroProps) => {
             </motion.div>
           </div>
 
-          {/* Right Side: Floating UI Graphic */}
+          {/* Right Side: Quick Scan Card */}
           <div className="relative">
             <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
+              initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.8, ease: "easeOut" }}
-              className="relative aspect-square max-w-md mx-auto"
+              className="relative max-w-md mx-auto w-full min-h-[400px] flex items-center"
             >
-              {/* Score Circle - Animating Wrapper */}
-              <div className="absolute -top-6 -right-6 z-20">
-                <motion.div 
-                  initial={{ rotate: -90, opacity: 0 }}
-                  animate={{ rotate: 0, opacity: 1 }}
-                  transition={{ delay: 1, duration: 1 }}
-                  className="w-32 h-32 bg-slate-900 border-4 border-slate-800 rounded-full flex flex-col items-center justify-center shadow-2xl"
-                >
-                   <svg className="absolute w-full h-full">
-                    <circle
-                      cx="64" cy="64" r="58"
-                      stroke="#10B981" strokeWidth="4"
-                      fill="transparent"
-                      strokeDasharray="364"
-                      strokeDashoffset="36" // Approx 90%
-                      className="opacity-20"
-                    />
-                      <motion.circle
-                      cx="64" cy="64" r="58"
-                      stroke="#10B981" strokeWidth="4"
-                      fill="transparent"
-                      strokeDasharray="364"
-                      initial={{ strokeDashoffset: 364 }}
-                      animate={{ strokeDashoffset: 364 - (364 * matchScore / 100) }}
-                      transition={{ delay: 0.5, duration: 1.5 }}
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                  <span className="text-3xl font-black text-brand-mint">{matchScore}%</span>
-                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Job Match</span>
-                </motion.div>
-              </div>
-
-              {/* Main "Resume" Page UI */}
-              <div className="w-full h-full bg-white rounded-2xl shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] p-8 overflow-hidden relative">
-                <div className="space-y-6">
-                  <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 bg-slate-100 rounded-full overflow-hidden flex items-center justify-center">
-                      <Star className="text-slate-300 w-8 h-8" />
-                    </div>
-                    <div className="space-y-2">
-                      <div className="h-4 w-32 bg-slate-200 rounded-full" />
-                      <div className="h-3 w-48 bg-slate-100 rounded-full" />
-                    </div>
-                  </div>
-                  <div className="space-y-3">
-                    <div className="h-2 w-full bg-slate-100 rounded-full" />
-                    <div className="h-2 w-full bg-slate-100 rounded-full" />
-                    <div className="h-2 w-3/4 bg-slate-100 rounded-full" />
-                  </div>
-                  <div className="pt-4 space-y-4">
-                    <div className="h-6 w-24 bg-slate-200 rounded-full" />
-                    <div className="space-y-2">
-                      <div className="h-2 w-full bg-slate-100 rounded-full" />
-                      <div className="h-2 w-5/6 bg-slate-100 rounded-full" />
-                    </div>
-                  </div>
-                </div>
-
-                {/* AI Overlay Assistant */}
-                <motion.div 
-                  initial={{ x: 50, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  transition={{ delay: 0.5, duration: 0.5 }}
-                  className="absolute bottom-8 right-8 left-8 bg-[#0F172A]/90 backdrop-blur-md rounded-2xl p-4 border border-white/10 shadow-2xl"
-                >
-                  <div className="flex items-center justify-between mb-3 text-brand-mint">
-                    <div className="flex items-center gap-2">
-                      <Zap className="w-4 h-4 fill-current" />
-                      <span className="text-xs font-bold uppercase tracking-wider">AI Assistant</span>
-                    </div>
-                    <span className="text-[10px] text-white/50">Optimizing...</span>
-                  </div>
-                  <p className="text-sm text-white/90 leading-relaxed italic">
-                    "Tailoring your experience section for <span className="text-brand-mint font-bold underline">Senior Software Engineer</span> roles. High impact keywords detected."
-                  </p>
-                </motion.div>
-              </div>
+              <HeroUploadCard onScoreUpdate={setMatchScore} />
+              
+              {/* Decorative Glow */}
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-brand-mint/10 blur-[100px] -z-10" />
             </motion.div>
           </div>
 
@@ -209,7 +149,7 @@ const Hero = ({ matchScore, openModal }: HeroProps) => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 + idx * 0.1 }}
                 onClick={pill.onClick}
-                className="flex items-center gap-2 px-6 py-3 bg-white/5 border border-white/10 rounded-full text-slate-300 text-sm font-semibold hover:bg-brand-mint/10 hover:border-brand-mint/30 hover:text-brand-mint transition-all"
+                className="flex items-center gap-2 px-6 py-3 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-full text-slate-600 dark:text-slate-300 text-sm font-semibold hover:bg-brand-mint/10 hover:border-brand-mint/30 hover:text-brand-mint transition-all"
               >
                 {pill.icon}
                 {pill.label}
@@ -219,6 +159,201 @@ const Hero = ({ matchScore, openModal }: HeroProps) => {
         </div>
       </div>
     </section>
+  );
+};
+
+const HeroUploadCard = ({ onScoreUpdate }: { onScoreUpdate: (s: number) => void }) => {
+  const [status, setStatus] = React.useState<"idle" | "scanning" | "result">("idle");
+  const [progress, setProgress] = React.useState(0);
+  const [score, setScore] = React.useState<number | null>(null);
+  
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const router = useRouter();
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setStatus("scanning");
+    setProgress(10);
+
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const pdfjs = await import("pdfjs-dist");
+      pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+      
+      const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
+      let fullText = "";
+      
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const textContent = await page.getTextContent();
+        fullText += textContent.items.map((it: any) => it.str).join(" ") + "\n";
+      }
+
+      setProgress(40);
+      
+      // Perform AI Scan directly here
+      const response = await fetch("/api/ai", {
+        method: "POST",
+        body: JSON.stringify({ task: "ATS_SCAN", content: fullText })
+      });
+      
+      setProgress(80);
+      const data = await response.json();
+      
+      if (data.score !== undefined) {
+        setScore(data.score);
+        onScoreUpdate(data.score);
+        
+        // Persist for global use and for Checker Page detailed view
+        localStorage.setItem("ats_score", data.score.toString());
+        localStorage.setItem("ats_full_result", JSON.stringify(data));
+        sessionStorage.setItem("pending_resume", fullText);
+        sessionStorage.setItem("pending_filename", file.name);
+        
+        // Notify other components
+        window.dispatchEvent(new Event("storage_update"));
+
+        setProgress(100);
+        setTimeout(() => setStatus("result"), 500);
+      } else {
+        throw new Error("Invalid scan result");
+      }
+    } catch (err) {
+      console.error("Scanning failed:", err);
+      alert("Failed to scan resume. Please try again.");
+      setStatus("idle");
+    }
+  };
+
+  return (
+    <div className="w-full bg-slate-50 dark:bg-white/5 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-[32px] p-8 shadow-2xl relative overflow-hidden group min-h-[380px] flex flex-col justify-center">
+      <AnimatePresence mode="wait">
+        {status === "idle" && (
+          <motion.div 
+            key="idle"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="space-y-6 text-center"
+          >
+            <div className="absolute top-0 right-0 p-4">
+              <div className="w-12 h-12 bg-brand-mint/10 rounded-full flex items-center justify-center text-brand-mint animate-pulse">
+                <Zap className="w-6 h-6 fill-current" />
+              </div>
+            </div>
+
+            <div className="w-20 h-20 bg-brand-mint rounded-3xl flex items-center justify-center text-brand-charcoal mx-auto shadow-[0_0_30px_rgba(45,212,191,0.3)]">
+              <FileUp className="w-10 h-10" />
+            </div>
+            
+            <div className="space-y-2">
+              <h3 className="text-2xl font-black text-foreground">Free ATS Audit</h3>
+              <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">Instant scan. Zero signup. Beat the algorithm.</p>
+            </div>
+
+            <input 
+              type="file" 
+              ref={fileInputRef} 
+              className="hidden" 
+              accept=".pdf"
+              onChange={handleFileUpload}
+            />
+
+            <Button 
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full h-14 rounded-2xl font-bold gap-2 text-lg"
+            >
+              Upload Resume
+            </Button>
+
+            <div className="flex items-center justify-center gap-6 opacity-40">
+              <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                  <ShieldCheck className="w-3 h-3 text-brand-mint" /> Secure
+              </div>
+              <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                  <Check className="w-3 h-3 text-brand-mint" /> Private
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {status === "scanning" && (
+          <motion.div 
+            key="scanning"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.1 }}
+            className="space-y-8 text-center py-8"
+          >
+            <div className="relative w-24 h-24 mx-auto">
+              <div className="absolute inset-0 border-4 border-white/5 rounded-full" />
+              <motion.div 
+                animate={{ rotate: 360 }}
+                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                className="absolute inset-0 border-4 border-brand-mint border-t-transparent rounded-full"
+              />
+              <div className="absolute inset-0 flex items-center justify-center">
+                 <span className="text-sm font-black text-brand-mint">{progress}%</span>
+              </div>
+            </div>
+            
+            <div className="space-y-3">
+              <h3 className="text-xl font-black text-foreground tracking-tight">AI Scanning...</h3>
+              <p className="text-[10px] uppercase font-black tracking-[0.2em] text-slate-400 dark:text-slate-500 animate-pulse">Analyzing Performance Data</p>
+            </div>
+          </motion.div>
+        )}
+
+        {status === "result" && (
+          <motion.div 
+            key="result"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="space-y-8 text-center"
+          >
+            <div className="relative w-32 h-32 mx-auto">
+              <svg className="w-full h-full transform -rotate-90">
+                <circle cx="64" cy="64" r="58" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-white/5" />
+                <motion.circle 
+                  cx="64" cy="64" r="58" stroke="currentColor" strokeWidth="8" fill="transparent" strokeDasharray={364.42} 
+                  initial={{ strokeDashoffset: 364.42 }}
+                  animate={{ strokeDashoffset: 364.42 - (364.42 * (score || 0) / 100) }}
+                  transition={{ duration: 1.5, ease: "easeOut" }}
+                  className="text-brand-mint shadow-[0_0_20px_rgba(45,212,191,0.5)]" 
+                />
+              </svg>
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span className="text-4xl font-black text-foreground">{score}%</span>
+                <span className="text-[8px] font-black uppercase text-slate-500 tracking-widest leading-none">Match</span>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+               <div className="space-y-1">
+                 <h3 className="text-xl font-black text-foreground">Analysis Complete</h3>
+                 <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">We identified 4 high-impact improvements.</p>
+               </div>
+               
+               <div className="flex flex-col gap-3">
+                  <Link href="/checker">
+                    <Button className="w-full h-12 rounded-xl font-bold gap-2 text-sm bg-brand-mint text-brand-charcoal hover:bg-brand-mint/90">
+                      View Detailed Report <ArrowRight className="w-4 h-4" />
+                    </Button>
+                  </Link>
+                  <button 
+                    onClick={() => setStatus("idle")}
+                    className="text-[10px] font-bold uppercase tracking-widest text-slate-500 hover:text-white transition-colors"
+                  >
+                    Scan Another Resume
+                  </button>
+               </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 };
 

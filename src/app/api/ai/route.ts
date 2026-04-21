@@ -24,6 +24,20 @@ Raw Text Content:
 ${text}
 `;
 
+async function fetchJobContent(url: string) {
+  try {
+    const response = await fetch(url, {
+      headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36" }
+    });
+    const html = await response.text();
+    // Basic HTML stripping
+    return html.replace(/<[^>]*>?/gm, " ").replace(/\s+/g, " ").trim().substring(0, 5000);
+  } catch (err) {
+    console.error("Scraping failed:", err);
+    return url; // Fallback to raw URL if fetch fails
+  }
+}
+
 const PROMPT_POLISH = (text: string) => `
 STRICT SYSTEM COMMAND: Return ONLY the polished version of the user's text. 
 DO NOT speak to the user. DO NOT say "Here is the result". DO NOT use quotes.
@@ -80,6 +94,26 @@ Output Structure:
 }
 `;
 
+const PROMPT_SUMMARY = (content: string) => {
+  const data = JSON.parse(content);
+  return `
+You are a world-class executive resume writer. 
+TASK: Generate 3 distinct, high-impact professional summaries based on the following context.
+
+CAREER HIGHLIGHTS: ${data.highlights}
+TARGET JOB DETAILS: ${data.context}
+
+RULES:
+1. Return ONLY a valid JSON array of strings: ["Summary 1", "Summary 2", "Summary 3"]
+2. Summaries must be exactly 3 sentences long.
+3. Use a different "hook" for each: 
+   - Variant 1: Focused on Years of Experience & Core Expertise.
+   - Variant 2: Focused on a major Quantifiable Achievement.
+   - Variant 3: Focused on unique "Soft Power" or Leadership qualities.
+4. Keep tone professional, energetic, and ATS-optimized.
+`;
+};
+
 function cleanData(data: any): any {
   if (typeof data === "string") {
     return data.replace(/@/g, "").trim();
@@ -104,6 +138,22 @@ export async function POST(req: Request) {
     
     console.log(`[AI API] Task: ${task}, Provider: ${provider}, Input Length: ${content?.length || 0}`);
 
+    let processedContent = content;
+    if (task === "SUMMARY_GEN") {
+      try {
+        const data = JSON.parse(content);
+        // Detect if context is a URL
+        const urlRegex = /^(https?:\/\/[^\s]+)$/;
+        if (data.context && urlRegex.test(data.context.trim())) {
+          console.log(`[AI API] Detected URL in summary context, scraping...`);
+          const scraped = await fetchJobContent(data.context.trim());
+          processedContent = JSON.stringify({ ...data, context: scraped });
+        }
+      } catch (e) {
+        console.error("Failed to parse summary content for URL detection", e);
+      }
+    }
+
     let resultText = "";
 
     if (provider === "GEMINI") {
@@ -114,11 +164,14 @@ export async function POST(req: Request) {
       const model = genAI.getGenerativeModel({ model: modelName });
       
       let prompt = "";
-      if (task === "EXTRACT") prompt = PROMPT_EXTRACT(content);
-      else if (task === "COMPACT") prompt = PROMPT_COMPACT(content);
-      else if (task === "TIPS") prompt = PROMPT_TIPS(content);
-      else if (task === "ATS_SCAN") prompt = PROMPT_ATS(content);
-      else prompt = PROMPT_POLISH(content);
+      if (task === "EXTRACT") prompt = PROMPT_EXTRACT(processedContent);
+      else if (task === "COMPACT") prompt = PROMPT_COMPACT(processedContent);
+      else if (task === "TIPS") prompt = PROMPT_TIPS(processedContent);
+      else if (task === "ATS_SCAN") prompt = PROMPT_ATS(processedContent);
+      else if (task === "SUMMARY_GEN") prompt = PROMPT_SUMMARY(processedContent);
+      else prompt = PROMPT_POLISH(processedContent);
+      
+      console.log(`\n--- PROMPT START ---\n${prompt}\n--- PROMPT END ---\n`);
       
       try {
         const result = await model.generateContent(prompt);
@@ -138,25 +191,56 @@ export async function POST(req: Request) {
       console.log(`[AI API] Using Ollama Model: ${modelToUse}`);
       
       let prompt = "";
-      if (task === "EXTRACT") prompt = PROMPT_EXTRACT(content);
-      else if (task === "COMPACT") prompt = PROMPT_COMPACT(content);
-      else if (task === "ATS_SCAN") prompt = PROMPT_ATS(content);
-      else prompt = PROMPT_POLISH(content);
+      if (task === "EXTRACT") prompt = PROMPT_EXTRACT(processedContent);
+      else if (task === "COMPACT") prompt = PROMPT_COMPACT(processedContent);
+      else if (task === "ATS_SCAN") prompt = PROMPT_ATS(processedContent);
+      else if (task === "SUMMARY_GEN") prompt = PROMPT_SUMMARY(processedContent);
+      else prompt = PROMPT_POLISH(processedContent);
+
+      console.log(`\n--- OLLAMA PROMPT START ---\n${prompt}\n--- OLLAMA PROMPT END ---\n`);
 
       const response = await fetch(`${process.env.OLLAMA_BASE_URL}/api/generate`, {
         method: "POST",
         body: JSON.stringify({
           model: modelToUse,
           prompt: prompt,
-          stream: false
+          stream: true
         })
       });
-      const data = await response.json();
-      resultText = data.response;
+
+      if (!response.body) throw new Error("No response body from Ollama");
+      
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      
+      process.stdout.write(`[AI API] Ollama Generating: `);
+      
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split("\n");
+        
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          try {
+            const json = JSON.parse(line);
+            if (json.response) {
+              resultText += json.response;
+              process.stdout.write(json.response);
+            }
+            if (json.done) break;
+          } catch (e) {
+            // Partial JSON line
+          }
+        }
+      }
+      process.stdout.write("\n");
       console.log(`[AI API] Raw Response Length: ${resultText.length}`);
     }
 
-    if (task === "EXTRACT" || task === "COMPACT" || task === "TIPS" || task === "ATS_SCAN") {
+    if (task === "EXTRACT" || task === "COMPACT" || task === "TIPS" || task === "ATS_SCAN" || task === "SUMMARY_GEN") {
       console.log(`[AI API] Attempting to parse JSON from response...`);
       // Extract JSON block from markdown response if LLM returns it wrapped in ```json
       const jsonMatch = resultText.match(/\{[\s\S]*\}|\[[\s\S]*\]/);

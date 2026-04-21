@@ -18,15 +18,19 @@ import {
   Mail,
   MapPin,
   Loader2,
-  Trash2
+  Trash2,
+  X,
+  Type
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
 import jsPDF from "jspdf";
 import { toPng } from "html-to-image";
 
 const BuilderPage = () => {
+  const { theme } = useTheme();
   const [activeTab, setActiveTab] = useState("content");
   const [isExporting, setIsExporting] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
@@ -63,6 +67,12 @@ const BuilderPage = () => {
   const [isCompacting, setIsCompacting] = useState(false);
   const [aiTips, setAiTips] = useState<string[]>([]);
   const [isLoadingTips, setIsLoadingTips] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [docSettings, setDocSettings] = useState({
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 14,
+    lineHeight: 1.6,
+  });
 
   React.useEffect(() => {
     if (typeof window !== "undefined") {
@@ -360,7 +370,7 @@ const BuilderPage = () => {
         initial={{ x: -300 }}
         animate={{ x: 0 }}
         style={{ width: sidebarWidth }}
-        className="bg-brand-charcoal text-white flex flex-col z-50 shadow-2xl no-print relative"
+        className="bg-white dark:bg-[#020617] text-foreground dark:text-white flex flex-col z-50 shadow-2xl no-print relative transition-colors duration-300 border-r border-border"
       >
         {/* Premium Resize Handle */}
         <div 
@@ -376,18 +386,131 @@ const BuilderPage = () => {
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-0.5 h-8 bg-white/20 rounded-full group-hover:bg-white group-hover:shadow-[0_0_10px_#2DD4BF]" />
         </div>
 
-        <div className="p-6 flex items-center justify-between border-b border-white/5">
+        <div className="p-6 flex items-center justify-between border-b border-border">
           <Link href="/" className="flex items-center gap-2 group">
             <ChevronLeft className="w-4 h-4 text-slate-500 group-hover:text-brand-mint transition-colors" />
-            <span className="font-black text-xl tracking-tighter">CV<span className="text-brand-mint">PILOT</span></span>
+            <span className="font-black text-xl tracking-tighter text-foreground dark:text-white">CV<span className="text-brand-mint">PILOT</span></span>
           </Link>
-          <div className="w-8 h-8 bg-white/5 rounded-lg flex items-center justify-center">
-             <Settings className="w-4 h-4 text-slate-400" />
-          </div>
+          <button 
+            onClick={() => setIsSettingsOpen(true)}
+            className="w-9 h-9 bg-slate-100 dark:bg-white/5 rounded-xl flex items-center justify-center hover:bg-brand-mint/20 hover:text-brand-mint transition-all border border-border dark:border-white/5 group"
+          >
+             <Settings className="w-4 h-4 text-slate-400 group-hover:rotate-90 transition-transform duration-500" />
+          </button>
         </div>
 
+        <AnimatePresence>
+          {isSettingsOpen && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setIsSettingsOpen(false)}
+                className="absolute inset-0 bg-brand-charcoal/80 backdrop-blur-sm" 
+              />
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                className="relative w-full max-w-lg bg-white dark:bg-[#020617] border border-border dark:border-white/10 rounded-[32px] shadow-2xl overflow-hidden"
+              >
+                <div className="p-8 border-b border-white/5 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-brand-mint/10 rounded-xl flex items-center justify-center">
+                      <Settings className="w-5 h-5 text-brand-mint" />
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-black text-white tracking-tight">Document Settings</h2>
+                      <p className="text-xs text-slate-500 uppercase font-bold tracking-widest mt-0.5">Control Typography & Layout</p>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => setIsSettingsOpen(false)}
+                    className="p-2 hover:bg-white/5 rounded-lg text-slate-500 transition-colors"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
+
+                <div className="p-8 space-y-8 max-h-[60vh] overflow-y-auto custom-scrollbar">
+                  {/* Font Family Section */}
+                  <div className="space-y-4">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 flex items-center gap-2">
+                       <Type className="w-3 h-3" /> Typography Style
+                    </label>
+                    <div className="grid grid-cols-1 gap-3">
+                       {[
+                         { id: "modern", name: "Modern Sans (Inter)", font: "'Inter', sans-serif" },
+                         { id: "serif", name: "Classic Serif (Playfair)", font: "'Playfair Display', serif" },
+                         { id: "clean", name: "Clean Mono (Roboto)", font: "'Roboto Mono', monospace" }
+                       ].map((font) => (
+                         <button 
+                           key={font.id}
+                           onClick={() => setDocSettings(prev => ({ ...prev, fontFamily: font.font }))}
+                           className={`w-full p-4 rounded-2xl text-left border-2 transition-all flex items-center justify-between group ${docSettings.fontFamily === font.font ? "border-brand-mint bg-brand-mint/10" : "border-white/5 bg-white/5 hover:border-white/10"}`}
+                         >
+                           <span className={`font-bold ${docSettings.fontFamily === font.font ? "text-brand-mint" : "text-slate-400 group-hover:text-white"}`} style={{ fontFamily: font.font }}>
+                             {font.name}
+                           </span>
+                           {docSettings.fontFamily === font.font && <CheckCircle2 className="w-5 h-5 text-brand-mint" />}
+                         </button>
+                       ))}
+                    </div>
+                  </div>
+
+                  {/* Font Size Section */}
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Base Font Size</label>
+                      <span className="text-brand-mint font-black text-xs">{docSettings.fontSize}px</span>
+                    </div>
+                    <input 
+                      type="range" 
+                      min="10" 
+                      max="18" 
+                      step="0.5"
+                      value={docSettings.fontSize}
+                      onChange={(e) => setDocSettings(prev => ({ ...prev, fontSize: parseFloat(e.target.value) }))}
+                      className="w-full h-1.5 bg-white/5 rounded-lg appearance-none cursor-pointer accent-brand-mint"
+                    />
+                    <div className="flex justify-between text-[8px] font-black text-slate-600 uppercase tracking-widest">
+                       <span>Small</span>
+                       <span>Standard</span>
+                       <span>Large</span>
+                    </div>
+                  </div>
+
+                  {/* Line Height Section */}
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Line Spacing</label>
+                      <span className="text-brand-mint font-black text-xs">{docSettings.lineHeight}x</span>
+                    </div>
+                    <input 
+                      type="range" 
+                      min="1" 
+                      max="2" 
+                      step="0.1"
+                      value={docSettings.lineHeight}
+                      onChange={(e) => setDocSettings(prev => ({ ...prev, lineHeight: parseFloat(e.target.value) }))}
+                      className="w-full h-1.5 bg-white/5 rounded-lg appearance-none cursor-pointer accent-brand-mint"
+                    />
+                  </div>
+                </div>
+
+                <div className="p-8 bg-brand-mint/5 border-t border-white/5">
+                   <Button variant="primary" className="w-full h-14 font-black uppercase text-sm tracking-widest" onClick={() => setIsSettingsOpen(false)}>
+                      Apply & Save Settings
+                   </Button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+
         {/* Tab Navigation */}
-        <div className="flex border-b border-white/5">
+        <div className="flex border-b border-border">
            {[
              { id: "content", icon: FileText, label: "Content" },
              { id: "design", icon: Layout, label: "Design" },
@@ -420,7 +543,7 @@ const BuilderPage = () => {
                         placeholder="Name"
                         value={resumeData.name || ""} 
                         onChange={(e) => updateData("name", e.target.value)}
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-brand-mint focus:outline-none transition-all pr-10"
+                        className="w-full bg-slate-50 dark:bg-white/5 border border-border dark:border-white/10 rounded-xl px-4 py-3 text-sm focus:border-brand-mint focus:outline-none transition-all pr-10 text-foreground dark:text-white"
                       />
                       <button 
                         onClick={() => updateData("name", "")}
@@ -435,7 +558,7 @@ const BuilderPage = () => {
                         placeholder="Job Title"
                         value={resumeData.jobTitle || ""} 
                         onChange={(e) => updateData("jobTitle", e.target.value)}
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-brand-mint focus:outline-none transition-all pr-10"
+                        className="w-full bg-slate-50 dark:bg-white/5 border border-border dark:border-white/10 rounded-xl px-4 py-3 text-sm focus:border-brand-mint focus:outline-none transition-all pr-10 text-foreground dark:text-white"
                       />
                       <button 
                         onClick={() => updateData("jobTitle", "")}
@@ -450,11 +573,11 @@ const BuilderPage = () => {
                         placeholder="Professional Summary"
                         value={resumeData.summary || ""} 
                         onChange={(e) => updateData("summary", e.target.value)}
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-xs leading-relaxed focus:border-brand-mint focus:outline-none transition-all resize-none pr-10"
+                        className="w-full bg-slate-50 dark:bg-white/5 border border-border dark:border-white/10 rounded-xl px-4 py-3 text-xs leading-relaxed focus:border-brand-mint focus:outline-none transition-all resize-none pr-10 text-foreground dark:text-white"
                       />
                       <button 
                         onClick={() => updateData("summary", "")}
-                        className="absolute right-3 top-4 text-slate-600 hover:text-red-400 opacity-0 group-hover/field:opacity-100 transition-all"
+                        className="absolute right-3 top-4 text-slate-400 hover:text-red-400 opacity-0 group-hover/field:opacity-100 transition-all"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -739,7 +862,7 @@ const BuilderPage = () => {
            )}
         </div>
 
-        <div className="p-6 border-t border-white/5 bg-brand-charcoal no-print">
+        <div className="p-6 border-t border-border bg-white dark:bg-[#020617] no-print">
            <Button 
             className="w-full h-12 gap-2" 
             variant="primary"
@@ -768,21 +891,21 @@ const BuilderPage = () => {
       </motion.aside>
 
       {/* Main Workspace */}
-      <main className="flex-1 flex flex-col relative overflow-hidden">
+      <main className="flex-1 flex flex-col relative overflow-hidden bg-background">
         {/* Header toolbar */}
-        <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 z-40 no-print">
+        <header className="h-16 bg-background border-b border-border flex items-center justify-between px-8 z-40 no-print transition-colors duration-300">
            <div className="flex items-center gap-6">
-              <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 cursor-pointer hover:bg-slate-100 transition-all">
+              <div className="flex items-center gap-2 bg-slate-100 dark:bg-white/5 border border-border rounded-lg px-3 py-1.5 cursor-pointer hover:bg-slate-200 dark:hover:bg-white/10 transition-all">
                  <Search className="w-4 h-4 text-slate-400" />
                  <span className="text-sm text-slate-500 font-medium">Search Content...</span>
               </div>
            </div>
 
            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2 text-slate-400 text-xs font-bold px-4 border-r border-slate-200">
+              <div className="flex items-center gap-2 text-slate-400 text-xs font-bold px-4 border-r border-border">
                  <Eye className="w-4 h-4" /> Reader View
               </div>
-              <div className="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-slate-600 uppercase text-xs">
+              <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-white/10 border border-border flex items-center justify-center font-bold text-slate-600 dark:text-white uppercase text-xs transition-colors">
                  {resumeData.name.charAt(0)}
               </div>
            </div>
@@ -793,6 +916,11 @@ const BuilderPage = () => {
              ref={resumeRef}
              initial={{ y: 20, opacity: 0 }}
              animate={{ y: 0, opacity: 1 }}
+             style={{ 
+                fontFamily: docSettings.fontFamily,
+                fontSize: `${docSettings.fontSize}px`,
+                lineHeight: docSettings.lineHeight
+             }}
              className={`resume-paper w-[800px] h-fit min-h-[1132px] bg-white shadow-[0_10px_40px_rgba(0,0,0,0.1)] rounded-sm overflow-hidden flex ${selectedTemplate === 'modern' ? 'flex-row' : 'flex-col'}`}
            >
               {/* --- MODERN TEMPLATE (SIDEBAR LEFT) --- */}

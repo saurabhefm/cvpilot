@@ -5,6 +5,17 @@
   --foreground: #0f172a;
   --brand-charcoal: #0f172a;
   --brand-mint: #10b981;
+  --surface: #ffffff;
+  --border: #e2e8f0;
+}
+
+.dark {
+  --background: #020617;
+  --foreground: #f8fafc;
+  --brand-charcoal: #020617;
+  --brand-mint: #10b981;
+  --surface: #0f172a;
+  --border: rgba(255, 255, 255, 0.1);
 }
 
 @theme inline {
@@ -12,6 +23,8 @@
   --color-foreground: var(--foreground);
   --color-brand-charcoal: var(--brand-charcoal);
   --color-brand-mint: var(--brand-mint);
+  --color-surface: var(--surface);
+  --color-border: var(--border);
   --font-sans: "Inter", var(--font-geist-sans);
 }
 
@@ -21,8 +34,8 @@ body {
 }
 
 .dark-hero {
-  background-color: var(--brand-charcoal);
-  color: white;
+  background-color: var(--background);
+  color: var(--foreground);
 }
 
 .gradient-text {

@@ -38,37 +38,37 @@ const TailoringModule = ({ hasFile, onGenerate }: TailoringModuleProps) => {
   };
 
   return (
-    <section className="py-24 bg-brand-charcoal overflow-hidden border-t border-white/5">
+    <section className="py-24 bg-background overflow-hidden border-t border-border transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-16 text-center lg:text-left">
-          <h2 className="text-4xl font-extrabold text-white mb-4">Precision Tailoring</h2>
-          <p className="text-slate-400 text-lg">Align your career history with any job post using AI-driven semantics.</p>
+          <h2 className="text-4xl font-extrabold text-foreground mb-4">Precision Tailoring</h2>
+          <p className="text-slate-500 dark:text-slate-400 text-lg">Align your career history with any job post using AI-driven semantics.</p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-px bg-white/10 border border-white/10 rounded-[40px] overflow-hidden shadow-2xl">
+        <div className="grid lg:grid-cols-2 gap-px bg-slate-200 dark:bg-white/10 border border-border dark:border-white/10 rounded-[40px] overflow-hidden shadow-2xl transition-colors">
           {/* Left: Uploader */}
-          <div className="p-12 hover:bg-white/5 transition-colors">
+          <div className="p-12 bg-white dark:bg-[#020617] hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
             <div className="flex items-center gap-4 mb-10">
-              <div className="w-12 h-12 bg-brand-mint rounded-2xl flex items-center justify-center text-white">
+              <div className="w-12 h-12 bg-brand-mint/20 rounded-2xl flex items-center justify-center text-brand-mint">
                 <FileText className="w-6 h-6" />
               </div>
               <div>
-                <h3 className="text-xl font-bold text-white">1. Upload Your Resume</h3>
+                <h3 className="text-xl font-bold text-foreground">1. Upload Your Resume</h3>
                 <p className="text-slate-500 text-sm italic">Existing PDF or master copy</p>
               </div>
             </div>
             
             <div className="h-64 border-2 border-dashed border-white/10 rounded-3xl flex flex-col items-center justify-center gap-4 bg-white/5 relative overflow-hidden">
                {hasFile ? (
-                 <motion.div 
-                   initial={{ scale: 0.8, opacity: 0 }}
-                   animate={{ scale: 1, opacity: 1 }}
-                   className="flex flex-col items-center gap-2"
-                 >
-                   <CheckCircle2 className="w-12 h-12 text-brand-mint" />
-                   <p className="text-white font-bold">Resume Uploaded</p>
-                   <p className="text-slate-500 text-xs">Ready for tailoring</p>
-                 </motion.div>
+                  <motion.div 
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    className="flex flex-col items-center gap-2"
+                  >
+                    <CheckCircle2 className="w-12 h-12 text-brand-mint" />
+                    <p className="text-foreground font-bold">Resume Uploaded</p>
+                    <p className="text-slate-500 text-xs">Ready for tailoring</p>
+                  </motion.div>
                ) : (
                  <>
                    <FileText className="w-12 h-12 text-white/20" />
@@ -142,7 +142,7 @@ const TailoringModule = ({ hasFile, onGenerate }: TailoringModuleProps) => {
                       className="w-full h-14 text-lg"
                       onClick={() => router.push("/builder")}
                     >
-                      Open Editor
+                      Open Creator
                     </Button>
                     <Button 
                       variant="outline" 
@@ -172,7 +172,7 @@ const TailoringModule = ({ hasFile, onGenerate }: TailoringModuleProps) => {
                 {!isGenerating && hasFile && !jobDescription && (
                   <button 
                     onClick={() => router.push("/builder")}
-                    className="mt-6 text-slate-400 text-sm font-bold uppercase tracking-widest hover:text-white transition-colors"
+                    className="mt-6 text-slate-400 text-sm font-bold uppercase tracking-widest hover:text-foreground transition-colors"
                   >
                     Skip & Build with Existing Resume 
                   </button>
