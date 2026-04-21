@@ -17,6 +17,26 @@ import { motion, AnimatePresence } from "framer-motion";
 const Navbar = () => {
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
 
+  const toggleMenu = (menu: string) => {
+    setActiveMenu(activeMenu === menu ? null : menu);
+  };
+
+  const scrollToSection = (id: string) => {
+    const element = document.getElementById(id);
+    if (element) {
+      const offset = 80; // Navbar height
+      const bodyRect = document.body.getBoundingClientRect().top;
+      const elementRect = element.getBoundingClientRect().top;
+      const elementPosition = elementRect - bodyRect;
+      const offsetPosition = elementPosition - offset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: "smooth"
+      });
+      setActiveMenu(null);
+    }
+  };
   const megaMenus = {
     resume: {
       left: [
@@ -51,14 +71,14 @@ const Navbar = () => {
               </span>
             </Link>
 
-            {/* Nav Links */}
             <div className="hidden md:flex items-center gap-8">
               <div 
                 className="relative group"
-                onMouseEnter={() => setActiveMenu("resume")}
-                onMouseLeave={() => setActiveMenu(null)}
               >
-                <button className="flex items-center gap-1 text-sm font-medium text-white/80 hover:text-brand-mint transition-colors">
+                <button 
+                  onClick={() => toggleMenu("resume")}
+                  className="flex items-center gap-1 text-sm font-medium text-white/80 hover:text-brand-mint transition-colors"
+                >
                   Resume <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${activeMenu === "resume" ? "rotate-180" : ""}`} />
                 </button>
 
@@ -112,9 +132,12 @@ const Navbar = () => {
                               </div>
                             </div>
                           </div>
-                          <Link href="/builder" className="mt-6 flex items-center justify-between text-sm font-bold text-brand-mint group/link">
+                          <button 
+                            onClick={() => scrollToSection("tailor")}
+                            className="mt-6 flex items-center justify-between text-sm font-bold text-brand-mint group/link w-full text-left"
+                          >
                             Explore Templates <ArrowRight className="w-4 h-4 group-hover/link:translate-x-1 transition-transform" />
-                          </Link>
+                          </button>
                         </div>
                       </div>
                     </motion.div>
@@ -122,12 +145,18 @@ const Navbar = () => {
                 </AnimatePresence>
               </div>
 
-              <Link href="/cover-letter" className="text-sm font-medium text-white/80 hover:text-brand-mint transition-colors underline-offset-4 hover:underline">
+              <button 
+                onClick={() => scrollToSection("summary")}
+                className="text-sm font-medium text-white/80 hover:text-brand-mint transition-colors underline-offset-4 hover:underline"
+              >
                 Cover Letter
-              </Link>
-              <Link href="/pricing" className="text-sm font-medium text-white/80 hover:text-brand-mint transition-colors underline-offset-4 hover:underline">
+              </button>
+              <button 
+                onClick={() => scrollToSection("pricing")}
+                className="text-sm font-medium text-white/80 hover:text-brand-mint transition-colors underline-offset-4 hover:underline"
+              >
                 Pricing
-              </Link>
+              </button>
             </div>
           </div>
 
@@ -136,7 +165,10 @@ const Navbar = () => {
             <Link href="/login" className="text-sm font-semibold text-white/80 hover:text-white transition-colors">
               Log in
             </Link>
-            <Button size="md">
+            <Button 
+              size="md"
+              onClick={() => scrollToSection("upload")}
+            >
               Build Your Resume
             </Button>
           </div>

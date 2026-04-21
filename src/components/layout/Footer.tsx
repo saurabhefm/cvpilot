@@ -31,26 +31,26 @@ const Footer = () => {
           <div>
             <h4 className="text-sm font-bold uppercase tracking-widest mb-6">Product</h4>
             <ul className="space-y-4">
-              <FooterLink href="/builder">AI Builder</FooterLink>
-              <FooterLink href="/checker">ATS Checker</FooterLink>
-              <FooterLink href="/templates">Templates</FooterLink>
+              <FooterLink href="#tailor">AI Builder</FooterLink>
+              <FooterLink href="#hero">ATS Checker</FooterLink>
+              <FooterLink href="#tailor">Templates</FooterLink>
             </ul>
           </div>
 
           <div>
             <h4 className="text-sm font-bold uppercase tracking-widest mb-6">Resources</h4>
             <ul className="space-y-4">
-              <FooterLink href="/guides">Career Blog</FooterLink>
-              <FooterLink href="/examples">CV Examples</FooterLink>
-              <FooterLink href="/help">Help Center</FooterLink>
+              <FooterLink href="#summary">Career Blog</FooterLink>
+              <FooterLink href="#features">CV Examples</FooterLink>
+              <FooterLink href="#hero">Help Center</FooterLink>
             </ul>
           </div>
 
           <div>
             <h4 className="text-sm font-bold uppercase tracking-widest mb-6">Legal</h4>
             <ul className="space-y-4">
-              <FooterLink href="/privacy">Privacy Policy</FooterLink>
-              <FooterLink href="/terms">Terms of Service</FooterLink>
+              <FooterLink href="#">Privacy Policy</FooterLink>
+              <FooterLink href="#">Terms of Service</FooterLink>
             </ul>
           </div>
         </div>

@@ -30,3 +30,9 @@ body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
+
+@media print {
+  nav, footer, .no-print {
+    display: none !important;
+  }
+}

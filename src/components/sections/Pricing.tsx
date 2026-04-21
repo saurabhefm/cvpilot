@@ -1,7 +1,5 @@
-"use client";
-
-import React from "react";
-import { Check, CreditCard, Wallet, Apple } from "lucide-react";
+import React, { useState } from "react";
+import { Check, CreditCard, Wallet, Apple, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/Button";
 
@@ -38,6 +36,16 @@ const plans = [
 ];
 
 const Pricing = () => {
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
+
+  const handleCheckout = () => {
+    setIsCheckingOut(true);
+    setTimeout(() => {
+      alert("Redirecting to Stripe secure checkout...");
+      setIsCheckingOut(false);
+    }, 1500);
+  };
+
   return (
     <section className="py-24 bg-white relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -87,8 +95,10 @@ const Pricing = () => {
               <Button 
                 variant={plan.recommended ? "primary" : "secondary"} 
                 className="w-full h-14 text-lg"
+                onClick={handleCheckout}
+                disabled={isCheckingOut}
               >
-                {plan.buttonText}
+                {isCheckingOut ? <Loader2 className="w-5 h-5 animate-spin" /> : plan.buttonText}
               </Button>
             </motion.div>
           ))}

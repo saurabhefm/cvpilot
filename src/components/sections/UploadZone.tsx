@@ -1,11 +1,35 @@
 "use client";
 
 import React, { useState } from "react";
-import { Upload, FileUp, Shield, Zap } from "lucide-react";
+import { Upload, FileUp, Shield, Zap, Loader2, Check, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 
-const UploadZone = () => {
+interface UploadZoneProps {
+  onFileUpload: (name: string) => void;
+}
+
+const UploadZone = ({ onFileUpload }: UploadZoneProps) => {
   const [isDragActive, setIsDragActive] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadedName, setUploadedName] = useState<string | null>(null);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      simulateUpload(file.name);
+    }
+  };
+
+  const simulateUpload = (name: string) => {
+    setIsUploading(true);
+    // Simulate API call to parse resume
+    setTimeout(() => {
+      setIsUploading(false);
+      setUploadedName(name);
+      onFileUpload(name);
+    }, 2500);
+  };
 
   return (
     <section className="py-24 bg-white">
@@ -34,16 +58,68 @@ const UploadZone = () => {
             `}
           >
             <div className="flex flex-col items-center">
-              <div className="w-20 h-20 bg-white rounded-2xl shadow-xl flex items-center justify-center mb-6">
-                <FileUp className="w-10 h-10 text-brand-mint" />
-              </div>
-              <p className="text-xl font-bold text-slate-900 mb-2">Drag and drop your resume</p>
-              <p className="text-slate-500 mb-8">PDF or DOCX files accepted (Max 5MB)</p>
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                className="hidden" 
+                accept=".pdf,.docx" 
+                onChange={handleFileChange}
+              />
               
-              <button className="bg-[#0F172A] text-white px-10 py-4 rounded-full font-bold text-lg hover:bg-slate-800 transition-colors flex items-center gap-3">
-                <Upload className="w-5 h-5" />
-                Select File
-              </button>
+              <div className="w-20 h-20 bg-white rounded-2xl shadow-xl flex items-center justify-center mb-6">
+                {isUploading ? (
+                  <Loader2 className="w-10 h-10 text-brand-mint animate-spin" />
+                ) : (
+                  <FileUp className="w-10 h-10 text-brand-mint" />
+                )}
+              </div>
+              
+              {isUploading ? (
+                <div className="space-y-4 text-center">
+                  <div className="flex justify-center">
+                     <Loader2 className="w-12 h-12 text-brand-mint animate-spin" />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-xl font-bold text-slate-900">Parsing Resume...</p>
+                    <p className="text-slate-500">Extracting skills and experience with AI</p>
+                  </div>
+                </div>
+              ) : uploadedName ? (
+                <motion.div 
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="space-y-6 text-center"
+                >
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="w-16 h-16 bg-brand-mint/10 rounded-full flex items-center justify-center text-brand-mint mb-2">
+                      <Check className="w-8 h-8" />
+                    </div>
+                    <p className="text-xl font-bold text-slate-900">Successfully Uploaded!</p>
+                    <p className="px-4 py-1 bg-slate-100 rounded-full text-slate-500 text-sm font-mono">{uploadedName}</p>
+                  </div>
+                  
+                  <button 
+                    onClick={() => document.getElementById("templates")?.scrollIntoView({ behavior: "smooth" })}
+                    className="bg-brand-mint text-brand-charcoal px-10 py-4 rounded-full font-bold text-lg hover:bg-brand-mint/80 transition-colors flex items-center gap-3"
+                  >
+                    Continue to Templates
+                    <ArrowRight className="w-5 h-5" />
+                  </button>
+                </motion.div>
+              ) : (
+                <>
+                  <p className="text-xl font-bold text-slate-900 mb-2">Drag and drop your resume</p>
+                  <p className="text-slate-500 mb-8">PDF or DOCX files accepted (Max 5MB)</p>
+                  
+                  <button 
+                    onClick={() => fileInputRef.current?.click()}
+                    className="bg-[#0F172A] text-white px-10 py-4 rounded-full font-bold text-lg hover:bg-slate-800 transition-colors flex items-center gap-3"
+                  >
+                    <Upload className="w-5 h-5" />
+                    Select File
+                  </button>
+                </>
+              )}
             </div>
             
             {/* Trust Badges */}

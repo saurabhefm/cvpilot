@@ -1,11 +1,21 @@
 "use client";
 
-import React from "react";
-import { Sparkles, Target, Zap, ArrowRight } from "lucide-react";
+import React, { useState } from "react";
+import { Sparkles, Target, Zap, ArrowRight, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/Button";
 
 const SummaryModule = () => {
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [hasSummary, setHasSummary] = useState(false);
+
+  const generateSummary = () => {
+    setIsGenerating(true);
+    setTimeout(() => {
+      setIsGenerating(false);
+      setHasSummary(true);
+    }, 2000);
+  };
   return (
     <section className="py-24 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -42,8 +52,17 @@ const SummaryModule = () => {
 
             <div className="p-6 bg-slate-50 border border-slate-100 rounded-3xl">
                <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Start Here</p>
-               <Button variant="primary" className="w-full justify-between">
-                 Generate My Pro Summary <ArrowRight className="w-5 h-5" />
+               <Button 
+                variant="primary" 
+                className="w-full justify-between h-14"
+                onClick={generateSummary}
+                disabled={isGenerating}
+               >
+                 {isGenerating ? (
+                   <>Crafting... <Loader2 className="w-5 h-5 animate-spin" /></>
+                 ) : (
+                   <>Generate My Pro Summary <ArrowRight className="w-5 h-5" /></>
+                 )}
                </Button>
             </div>
           </div>
@@ -56,32 +75,32 @@ const SummaryModule = () => {
                <p className="text-white/40 text-xs font-bold uppercase tracking-[0.2em] mb-8">Dynamic Output Preview</p>
                
                <div className="space-y-6">
-                 <motion.div 
-                   initial={{ opacity: 0, x: -20 }}
-                   whileInView={{ opacity: 1, x: 0 }}
-                   transition={{ delay: 0.2 }}
-                   className="p-4 bg-white/5 border-l-4 border-brand-mint rounded-r-xl"
-                 >
-                   <p className="text-white font-medium italic">"Data-driven Marketing Manager with 8+ years of experience scaling SaaS revenue by 40%..."</p>
-                 </motion.div>
-                 
-                 <motion.div 
-                   initial={{ opacity: 0, x: -20 }}
-                   whileInView={{ opacity: 1, x: 0 }}
-                   transition={{ delay: 0.4 }}
-                   className="p-4 bg-white/5 border-l-4 border-brand-mint rounded-r-xl"
-                 >
-                   <p className="text-white font-medium italic">"Expert in lead generation and automated lifecycle marketing strategies across multi-channel platforms..."</p>
-                 </motion.div>
-
-                 <motion.div 
-                   initial={{ opacity: 0, x: -20 }}
-                   whileInView={{ opacity: 1, x: 0 }}
-                   transition={{ delay: 0.6 }}
-                   className="p-4 bg-white/5 border-l-4 border-brand-mint rounded-r-xl"
-                 >
-                   <p className="text-white font-medium italic">"Seeking to leverage technical proficiency in CRM optimization to drive growth at CV Labs."</p>
-                 </motion.div>
+                 {hasSummary ? (
+                   <>
+                    <motion.div 
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      className="p-4 bg-brand-mint border-l-4 border-white rounded-r-xl"
+                    >
+                      <p className="text-brand-charcoal font-bold italic">"Expert Marketing Strategist with 10+ years experience in multi-channel scaling..."</p>
+                    </motion.div>
+                    <motion.div 
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.2 }}
+                      className="p-4 bg-white/10 border-l-4 border-brand-mint rounded-r-xl"
+                    >
+                      <p className="text-white font-medium italic italic">"Proven record of driving 50% YoY growth for high-traffic SaaS products."</p>
+                    </motion.div>
+                   </>
+                 ) : (
+                   <>
+                    <div className="h-16 bg-white/5 rounded-xl border border-dashed border-white/10 flex items-center justify-center">
+                       <p className="text-white/20 text-sm italic italic">Sample snippet will appear here...</p>
+                    </div>
+                    <div className="h-16 bg-white/5 rounded-xl border border-dashed border-white/10" />
+                   </>
+                 )}
                </div>
 
                <div className="mt-12 pt-8 border-t border-white/10 flex justify-between items-center">
