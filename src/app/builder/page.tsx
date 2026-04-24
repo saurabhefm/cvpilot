@@ -34,7 +34,7 @@ import { toPng } from "html-to-image";
 
 const BuilderPage = () => {
   const { theme } = useTheme();
-  const { isLoaded: clerkLoaded, isSignedIn: clerkSignedIn } = useUser();
+  // const { isLoaded: clerkLoaded, isSignedIn: clerkSignedIn } = useUser();
   // Clerk Auth disabled for public testing
   const isLoaded = true;
   const isSignedIn = true;
@@ -438,13 +438,13 @@ const BuilderPage = () => {
                 {isSaving ? "Syncing..." : lastSaved ? "Synced" : "Save"}
               </button>
             )}
-            {isLoaded && !isSignedIn && (
+            {/* {isLoaded && !isSignedIn && (
               <SignInButton mode="modal">
                 <button className="px-3 py-1.5 bg-slate-100 dark:bg-white/5 text-slate-500 rounded-lg text-xs font-bold hover:bg-brand-mint/10 hover:text-brand-mint transition-all border border-border dark:border-white/5">
                   Save to Profile
                 </button>
               </SignInButton>
-            )}
+            )} */}
             <button 
               onClick={() => setIsSettingsOpen(true)}
               className="w-9 h-9 bg-slate-100 dark:bg-white/5 rounded-xl flex items-center justify-center hover:bg-brand-mint/20 hover:text-brand-mint transition-all border border-border dark:border-white/5 group"

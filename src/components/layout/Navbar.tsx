@@ -22,7 +22,7 @@ import {
 } from "@clerk/nextjs";
 
 const Navbar = () => {
-  const { isLoaded: clerkLoaded, isSignedIn: clerkSignedIn } = useUser();
+  // const { isLoaded: clerkLoaded, isSignedIn: clerkSignedIn } = useUser();
   // Clerk Auth disabled for public testing
   const isLoaded = true;
   const isSignedIn = true;
@@ -195,7 +195,7 @@ const Navbar = () => {
             <div className="h-6 w-px bg-border hidden sm:block" />
             <ATSBadge />
             
-            {isLoaded && !isSignedIn && (
+            {/* {isLoaded && !isSignedIn && (
               <div className="hidden sm:flex items-center gap-6">
                 <SignInButton mode="modal">
                   <button className="text-sm font-semibold text-foreground/80 hover:text-foreground transition-colors">
@@ -208,7 +208,7 @@ const Navbar = () => {
                   </Button>
                 </SignUpButton>
               </div>
-            )}
+            )} */}
 
             {isLoaded && isSignedIn && (
               <div className="flex items-center gap-4">
@@ -217,7 +217,7 @@ const Navbar = () => {
                     My Resumes
                   </Button>
                 </Link>
-                <UserButton 
+                {/* <UserButton 
                   appearance={{
                     elements: {
                       userButtonAvatarBox: "w-10 h-10 border-2 border-brand-mint/20 hover:border-brand-mint transition-all",
@@ -225,7 +225,8 @@ const Navbar = () => {
                       userButtonPopoverActionButtonText: "text-foreground font-medium",
                     }
                   }}
-                />
+                /> */}
+                <div className="w-10 h-10 rounded-full bg-brand-mint/10 border-2 border-brand-mint/20 flex items-center justify-center text-brand-mint font-bold">G</div>
               </div>
             )}
           </div>
